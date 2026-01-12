@@ -16,9 +16,11 @@
 </p>
 
 <p align="center">
-  <a href="#installation">Why GFNs?</a>
+  <a href="#why-gfns">Why GFNs?</a>
   •
-  <a href="#quick-start">Quickstart</a>
+  <a href="#installation">Installation</a>
+  •
+  <a href="#quickstart">Quickstart</a>
   •
   <a href="#citing">Citing</a>
 </p>
@@ -41,36 +43,28 @@ Key advantages of GFNs:
 - Provable guarantees on performance for super- and sub-resolution
 - Both fixed and adapative multifidelity training possible
 
-
-The GFN equations are:
-$$
-\begin{equation*}
-\begin{aligned}
-\tilde{W}^e_{ij_{{\mathcal{M}_{n}}}} &= \sum_{\forall k_{\mathcal{M}_{o}} \text{ s.t } k_{\mathcal{M}_{o}} {\leftarrow}\!{\backslash}\!{\rightarrow} j_{\mathcal{M}_{n}}} \frac{W^e_{ik_{\mathcal{M}_{o}}}}{\lvert \{ h_{\mathcal{M}_{n}} \text{ s.t. } k_{\mathcal{M}_{o}} ~{\leftarrow}\!{\backslash}\!{\rightarrow}~ h_{\mathcal{M}_{n}} \}\rvert}, \\
-% \label{eq:gfn_be}
-\tilde{b}^e_{i} &= b^e_{i}, \\
-% \label{eq:gfn_Wd}
-\tilde{W}^d_{i_{\mathcal{M}_{n}}j} &= \underset{\forall k_{\mathcal{M}_{o}} \text{ s.t } k_{\mathcal{M}_{o}} {\leftarrow}\!{\backslash}\!{\rightarrow} i_{\mathcal{M}_{n}}}{\operatorname{mean}} {W}^d_{k_{\mathcal{M}_{o}}j}, \\
-% \label{eq:gfn_bd}
-\tilde{b}^d_{i_{\mathcal{M}_{n}}} &=  \underset{\forall k_{\mathcal{M}_{o}} \text{ s.t } k_{\mathcal{M}_{o}} {\leftarrow}\!{\backslash}\!{\rightarrow} i_{\mathcal{M}_{n}}}{\operatorname{mean}} {b}^d_{k_{\mathcal{M}_{o}}}.
-\end{aligned}
-\end{equation*}
-$$
-
-## Quickstart
+## Installation
 
 `gfn` is readily available on PyPI
 ```
 pip install gfn
 ```
 
+For a developer installation
+```
+git clone https://github.com/Oisin-M/gfn.git
+cd gfn
+pip install -e .
+pre-commit install
+```
+
+## Quickstart
+
 Using `gfn` is intuitive - the `GFN` layer is an extension of the `torch.nn.Linear` layer. Simply import it `from gfn import GFN` and use as follows:
 
-**No graph**
+**No graph (equivalent to `torch.nn.Linear`)**
 ```python
 from gfn import GFN
-
-# no graphs (equivalent to torch.nn.Linear)
 
 gfn_layer = GFN(in_features=2, out_features=3)
 
