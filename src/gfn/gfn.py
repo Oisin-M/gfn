@@ -40,6 +40,8 @@ class GFN(torch.nn.Linear):
                 "Output graphical data provided but GFN layer was not initialized with output graphical data."
             )
 
+        device = x.device
+
         weight = self.weight
         bias = self.bias
         in_tree = self.in_tree
@@ -51,54 +53,72 @@ class GFN(torch.nn.Linear):
 
         # -- ENCODER-style --
         if new_in_graph is not None:
-            new_kd_tree = KDTree(new_in_graph)
-            new_to_orig_in_inds = in_tree.query(new_in_graph, k=1)[1]
-            orig_to_new_in_inds = new_kd_tree.query(original_in_graph, k=1)[1]
-            orig_size = original_in_graph.shape[0]
-            new_size = new_in_graph.shape[0]
+            with torch.no_grad():
+                new_kd_tree = KDTree(new_in_graph)
+                new_to_orig_in_inds = in_tree.query(new_in_graph, k=1)[1]
+                orig_to_new_in_inds = new_kd_tree.query(original_in_graph, k=1)[1]
+                orig_size = original_in_graph.shape[0]
+                new_size = new_in_graph.shape[0]
 
-            denominator = torch.bincount(
-                torch.tensor(new_to_orig_in_inds, device=x.device), minlength=orig_size
-            )
-            denominator.requires_grad = False
-            orig_pointing_elsewhere = np.arange(orig_size)
-            orig_pointing_elsewhere = orig_pointing_elsewhere[
-                orig_pointing_elsewhere != new_to_orig_in_inds[orig_to_new_in_inds]
-            ]
-            if orig_pointing_elsewhere.shape[0] > 0:
-                index = torch.from_numpy(orig_pointing_elsewhere)
-                values = torch.ones(
-                    orig_pointing_elsewhere.shape[0], dtype=int, requires_grad=False
+                denominator = torch.bincount(
+                    torch.tensor(new_to_orig_in_inds, device=device),
+                    minlength=orig_size,
                 )
-                denominator = denominator.index_add_(0, index, values)
+                denominator.requires_grad = False
+                orig_pointing_elsewhere = np.arange(orig_size)
+                orig_pointing_elsewhere = orig_pointing_elsewhere[
+                    orig_pointing_elsewhere != new_to_orig_in_inds[orig_to_new_in_inds]
+                ]
+
+            if orig_pointing_elsewhere.shape[0] > 0:
+                with torch.no_grad():
+                    index = torch.as_tensor(orig_pointing_elsewhere, device=device)
+                    values = torch.ones(
+                        orig_pointing_elsewhere.shape[0],
+                        dtype=int,
+                        requires_grad=False,
+                        device=device,
+                    )
+                    denominator = denominator.index_add_(0, index, values)
             scaled_weight = weight / denominator
             weight = scaled_weight[..., new_to_orig_in_inds]
             if orig_pointing_elsewhere.shape[0] > 0:
-                index = torch.from_numpy(orig_to_new_in_inds[orig_pointing_elsewhere])
+                index = torch.as_tensor(
+                    orig_to_new_in_inds[orig_pointing_elsewhere], device=device
+                )
                 values = scaled_weight[..., orig_pointing_elsewhere]
                 weight = weight.index_add_(1, index, values)
 
         # -- DECODER-style --
         if new_out_graph is not None:
-            new_kd_tree = KDTree(new_out_graph)
-            new_to_orig_in_inds = out_tree.query(new_out_graph, k=1)[1]
-            orig_to_new_in_inds = new_kd_tree.query(original_out_graph, k=1)[1]
-            orig_size = original_out_graph.shape[0]
-            new_size = new_out_graph.shape[0]
+            with torch.no_grad():
+                new_kd_tree = KDTree(new_out_graph)
+                new_to_orig_in_inds = out_tree.query(new_out_graph, k=1)[1]
+                orig_to_new_in_inds = new_kd_tree.query(original_out_graph, k=1)[1]
+                orig_size = original_out_graph.shape[0]
+                new_size = new_out_graph.shape[0]
 
+                denominator = torch.ones(
+                    new_size, device=device, dtype=int, requires_grad=False
+                )
+                orig_pointing_elsewhere = np.arange(orig_size)
+                orig_pointing_elsewhere = orig_pointing_elsewhere[
+                    orig_pointing_elsewhere != new_to_orig_in_inds[orig_to_new_in_inds]
+                ]
             new_weight = weight[new_to_orig_in_inds]
             new_bias = bias[new_to_orig_in_inds] if bias is not None else None
-            denominator = torch.ones(
-                new_size, device=x.device, dtype=int, requires_grad=False
-            )
-            orig_pointing_elsewhere = np.arange(orig_size)
-            orig_pointing_elsewhere = orig_pointing_elsewhere[
-                orig_pointing_elsewhere != new_to_orig_in_inds[orig_to_new_in_inds]
-            ]
             if orig_pointing_elsewhere.shape[0] > 0:
-                index = torch.from_numpy(orig_to_new_in_inds[orig_pointing_elsewhere])
-                values = torch.ones(orig_pointing_elsewhere.shape[0], dtype=int)
-                denominator = denominator.index_add_(0, index, values)
+                with torch.no_grad():
+                    index = torch.as_tensor(
+                        orig_to_new_in_inds[orig_pointing_elsewhere], device=device
+                    )
+                    values = torch.ones(
+                        orig_pointing_elsewhere.shape[0],
+                        dtype=int,
+                        requires_grad=False,
+                        device=device,
+                    )
+                    denominator = denominator.index_add_(0, index, values)
                 values = weight[orig_pointing_elsewhere]
                 new_weight = new_weight.index_add_(0, index, values)
                 if bias is not None:
@@ -108,5 +128,4 @@ class GFN(torch.nn.Linear):
                 new_weight = new_weight / denominator.unsqueeze(1)
             weight = new_weight
             bias = new_bias
-
         return x @ weight.T + bias if bias is not None else x @ weight.T
