@@ -1,4 +1,4 @@
-name: qa
+name: ci
 
 on:
   push:
@@ -25,8 +25,8 @@ jobs:
 
       - name: Install package
         run: |
-          uv sync --only-group dev
+          uv sync --only-group tests
           uv pip install .
 
       - name: Run pre-commit
-        run: uv run pre-commit run --all-files
+        run: uv run pytest
