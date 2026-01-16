@@ -42,6 +42,7 @@ dev = [
 ]
 tests = [
     "pytest",
+    "pytest-cov"
 ]
 
 [project.urls]
