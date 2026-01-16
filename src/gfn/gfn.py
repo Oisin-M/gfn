@@ -1,24 +1,32 @@
 import torch
 import numpy as np
-from gfn.nn_lookup import NNLookupSciPy, NNLookupFAISS
+from gfn.nn_lookup import NNLookupSciPy, NNLookupFaiss
 
 
 class GFN(torch.nn.Linear):
-    def __init__(self, in_features, out_features, bias=True, device=None, dtype=None, nn_backend="scipy"):
+    def __init__(
+        self,
+        in_features,
+        out_features,
+        bias=True,
+        device=None,
+        dtype=None,
+        nn_backend="scipy",
+    ):
         if type(in_features) is int and type(out_features) is int:
             print(
                 "Warning: no graphical data provided to GFN layer. Behaves like a standard Linear layer."
             )
-        
+
         if nn_backend == "scipy":
-            Lookup = NNLookupSciPy
+            self.Lookup = NNLookupSciPy
         elif nn_backend == "faiss":
-            Lookup = NNLookupFAISS
+            self.Lookup = NNLookupFaiss
         else:
             raise ValueError(f"Unknown nn_backend: {nn_backend}")
 
         if type(in_features) is not int:
-            self.in_tree = Lookup(in_features)
+            self.in_tree = self.Lookup(in_features)
             self.in_graph = in_features
             in_features = in_features.shape[0]
         else:
@@ -26,7 +34,7 @@ class GFN(torch.nn.Linear):
             self.in_graph = None
 
         if type(out_features) is not int:
-            self.out_tree = Lookup(out_features)
+            self.out_tree = self.Lookup(out_features)
             self.out_graph = out_features
             out_features = out_features.shape[0]
         else:
@@ -61,7 +69,7 @@ class GFN(torch.nn.Linear):
         # -- ENCODER-style --
         if new_in_graph is not None:
             with torch.no_grad():
-                new_kd_tree = Lookup(new_in_graph)
+                new_kd_tree = self.Lookup(new_in_graph)
                 new_to_orig_in_inds = in_tree.query(new_in_graph, k=1)[1]
                 orig_to_new_in_inds = new_kd_tree.query(original_in_graph, k=1)[1]
                 orig_size = original_in_graph.shape[0]
@@ -99,7 +107,7 @@ class GFN(torch.nn.Linear):
         # -- DECODER-style --
         if new_out_graph is not None:
             with torch.no_grad():
-                new_kd_tree = Lookup(new_out_graph)
+                new_kd_tree = self.Lookup(new_out_graph)
                 new_to_orig_in_inds = out_tree.query(new_out_graph, k=1)[1]
                 orig_to_new_in_inds = new_kd_tree.query(original_out_graph, k=1)[1]
                 orig_size = original_out_graph.shape[0]
