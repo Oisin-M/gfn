@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches: [ "main", "gfn" ]
+  pull_request:
+    branches: [ "main", "gfn" ]
+  workflow_dispatch: ~
+
+jobs:
+  qa:
+    name: qa
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install package
+        run: |
+          uv sync --only-group tests
+          uv pip install .
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
