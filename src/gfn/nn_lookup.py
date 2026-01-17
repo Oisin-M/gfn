@@ -47,21 +47,20 @@ class NNLookupFaiss(torch.nn.Module):
     def _build_index(self, points):
         points_np = to_numpy(points).astype("float32")
         index = self.faiss.IndexFlatL2(points_np.shape[1])
-        index.add(points_np)
 
         if self.device.type == "cuda" and self.gpu_support:
             self.res = self.faiss.StandardGpuResources()
             index = self.faiss.index_cpu_to_gpu(self.res, 0, index)
 
+        index.add(points_np)
+
         return index
 
     def query(self, points):
         if self.device.type == "cpu":
-            points_np = to_numpy(points).astype("float32")
+            points_np = to_numpy(points)
         else:
-            points_np = to_numpy(points).astype(
-                "float32"
-            )  # Faiss GPU still expects numpy
+            points_np = to_numpy(points)
         _, indices = self.index.search(points_np, 1)
         # returns numpy, but it is autoconverted to torch so not an issue
         return indices.squeeze()
