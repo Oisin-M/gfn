@@ -75,8 +75,8 @@ class GFN(torch.nn.Linear):
         if new_in_graph is not None:
             with torch.no_grad():
                 new_kd_tree = self.lookup(new_in_graph)
-                new_to_orig_in_inds = in_tree.query(new_in_graph, k=1)[1]
-                orig_to_new_in_inds = new_kd_tree.query(original_in_graph, k=1)[1]
+                new_to_orig_in_inds = in_tree.query(new_in_graph)
+                orig_to_new_in_inds = new_kd_tree.query(original_in_graph)
                 orig_size = original_in_graph.shape[0]
                 new_size = new_in_graph.shape[0]
 
@@ -113,8 +113,8 @@ class GFN(torch.nn.Linear):
         if new_out_graph is not None:
             with torch.no_grad():
                 new_kd_tree = self.lookup(new_out_graph)
-                new_to_orig_in_inds = out_tree.query(new_out_graph, k=1)[1]
-                orig_to_new_in_inds = new_kd_tree.query(original_out_graph, k=1)[1]
+                new_to_orig_in_inds = out_tree.query(new_out_graph)
+                orig_to_new_in_inds = new_kd_tree.query(original_out_graph)
                 orig_size = original_out_graph.shape[0]
                 new_size = new_out_graph.shape[0]
 
