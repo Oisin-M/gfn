@@ -25,7 +25,7 @@ jobs:
 
       - name: Install package
         run: |
-          uv sync --only-group tests
+          uv sync --only-group ci
           uv pip install .
 
       - name: Run tests
