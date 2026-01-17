@@ -2,6 +2,13 @@ import torch
 import numpy as np
 
 
+def to_device(device):
+    if isinstance(device, str):
+        return torch.device(device)
+    else:
+        return device
+
+
 def to_numpy(points):
     if isinstance(points, np.ndarray):
         return points
@@ -12,7 +19,7 @@ def to_numpy(points):
 
 
 class NNLookupSciPy:
-    def __init__(self, points):
+    def __init__(self, points, device=None, dtype=None):
         from scipy.spatial import cKDTree as KDTree
 
         points = to_numpy(points)
@@ -26,10 +33,10 @@ class NNLookupSciPy:
 
 
 class NNLookupFaiss(torch.nn.Module):
-    def __init__(self, points):
+    def __init__(self, points, device=None, dtype=None):
         super().__init__()
         self.faiss = self.import_faiss()
-        self.device = self._device(points)
+        self.device = self._device(points) if device is None else to_device(device)
         self.gpu_support = self._has_gpu()
         self.index = self._build_index(points)
         self.res = None
@@ -65,11 +72,10 @@ class NNLookupFaiss(torch.nn.Module):
         # returns numpy, but it is autoconverted to torch so not an issue
         return indices.squeeze()
 
-    def _apply(self, fn):
-        super()._apply(fn)
-
-        dummy = torch.empty(0)
-        device = fn(dummy).device
+    def to(self, *args, **kwargs):
+        device = kwargs.get("device", args[0] if args else None)
+        if isinstance(device, str):
+            device = torch.device(device)
 
         if self.device.type == "cpu" and device.type == "cuda" and self.gpu_support:
             self.res = (

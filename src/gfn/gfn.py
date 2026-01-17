@@ -35,14 +35,14 @@ class GFN(torch.nn.Linear):
         super().__init__(in_features_size, out_features_size, bias, device, dtype)
 
         if type(in_features) is not int:
-            self.in_tree = self.lookup(in_features)
+            self.in_tree = self.lookup(in_features, device=device, dtype=dtype)
             self.in_graph = in_features
         else:
             self.in_tree = None
             self.in_graph = None
 
         if type(out_features) is not int:
-            self.out_tree = self.lookup(out_features)
+            self.out_tree = self.lookup(out_features, device=device, dtype=dtype)
             self.out_graph = out_features
         else:
             self.out_tree = None
