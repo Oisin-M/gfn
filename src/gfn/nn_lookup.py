@@ -72,10 +72,11 @@ class NNLookupFaiss(torch.nn.Module):
         # returns numpy, but it is autoconverted to torch so not an issue
         return indices.squeeze()
 
-    def to(self, *args, **kwargs):
-        device = kwargs.get("device", args[0] if args else None)
-        if isinstance(device, str):
-            device = torch.device(device)
+    def _apply(self, fn):
+        super()._apply(fn)
+
+        dummy = torch.empty(0)
+        device = fn(dummy).device
 
         if self.device.type == "cpu" and device.type == "cuda" and self.gpu_support:
             self.res = (
