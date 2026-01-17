@@ -44,9 +44,10 @@ class NNLookupFaiss(torch.nn.Module):
     def _device(self, points):
         if isinstance(points, torch.Tensor):
             return points.device
-        if isinstance(points, np.ndarray):
+        elif isinstance(points, np.ndarray):
             return torch.device("cpu")
-        raise TypeError("Input points must be a numpy array or a torch tensor.")
+        else:
+            raise TypeError("Input points must be a numpy array or a torch tensor.")
 
     def _has_gpu(self):
         return hasattr(self.faiss, "StandardGpuResources")
@@ -64,10 +65,7 @@ class NNLookupFaiss(torch.nn.Module):
         return index
 
     def query(self, points):
-        if self.device.type == "cpu":
-            points_np = to_numpy(points)
-        else:
-            points_np = to_numpy(points)
+        points_np = to_numpy(points)
         _, indices = self.index.search(points_np, 1)
         # returns numpy, but it is autoconverted to torch so not an issue
         return indices.squeeze()
