@@ -1,32 +1,52 @@
 import torch
-from scipy.spatial import cKDTree as KDTree
 import numpy as np
+from gfn.nn_lookup import NNLookupSciPy, NNLookupFaiss
 
 
 class GFN(torch.nn.Linear):
-    def __init__(self, in_features, out_features, bias=True, device=None, dtype=None):
+    def __init__(
+        self,
+        in_features,
+        out_features,
+        bias=True,
+        device=None,
+        dtype=None,
+        nn_backend="scipy",
+    ):
         if type(in_features) is int and type(out_features) is int:
             print(
                 "Warning: no graphical data provided to GFN layer. Behaves like a standard Linear layer."
             )
 
+        if nn_backend == "scipy":
+            self.lookup = NNLookupSciPy
+        elif nn_backend == "faiss":
+            self.lookup = NNLookupFaiss
+        else:
+            raise ValueError(f"Unknown nn_backend: {nn_backend}")
+
+        in_features_size = (
+            in_features.shape[0] if type(in_features) is not int else in_features
+        )
+        out_features_size = (
+            out_features.shape[0] if type(out_features) is not int else out_features
+        )
+
+        super().__init__(in_features_size, out_features_size, bias, device, dtype)
+
         if type(in_features) is not int:
-            self.in_tree = KDTree(in_features)
+            self.in_tree = self.lookup(in_features, device=device, dtype=dtype)
             self.in_graph = in_features
-            in_features = in_features.shape[0]
         else:
             self.in_tree = None
             self.in_graph = None
 
         if type(out_features) is not int:
-            self.out_tree = KDTree(out_features)
+            self.out_tree = self.lookup(out_features, device=device, dtype=dtype)
             self.out_graph = out_features
-            out_features = out_features.shape[0]
         else:
             self.out_tree = None
             self.out_graph = None
-
-        super().__init__(in_features, out_features, bias, device, dtype)
 
     def forward(self, x, in_graph=None, out_graph=None):
         if in_graph is None and out_graph is None:
@@ -54,16 +74,16 @@ class GFN(torch.nn.Linear):
         # -- ENCODER-style --
         if new_in_graph is not None:
             with torch.no_grad():
-                new_kd_tree = KDTree(new_in_graph)
-                new_to_orig_in_inds = in_tree.query(new_in_graph, k=1)[1]
-                orig_to_new_in_inds = new_kd_tree.query(original_in_graph, k=1)[1]
+                new_kd_tree = self.lookup(new_in_graph)
+                new_to_orig_in_inds = in_tree.query(new_in_graph)
+                orig_to_new_in_inds = new_kd_tree.query(original_in_graph)
                 orig_size = original_in_graph.shape[0]
                 new_size = new_in_graph.shape[0]
 
                 denominator = torch.bincount(
                     torch.tensor(new_to_orig_in_inds, device=device),
                     minlength=orig_size,
-                )
+                ).to(device)
                 denominator.requires_grad = False
                 orig_pointing_elsewhere = np.arange(orig_size)
                 orig_pointing_elsewhere = orig_pointing_elsewhere[
@@ -92,9 +112,9 @@ class GFN(torch.nn.Linear):
         # -- DECODER-style --
         if new_out_graph is not None:
             with torch.no_grad():
-                new_kd_tree = KDTree(new_out_graph)
-                new_to_orig_in_inds = out_tree.query(new_out_graph, k=1)[1]
-                orig_to_new_in_inds = new_kd_tree.query(original_out_graph, k=1)[1]
+                new_kd_tree = self.lookup(new_out_graph)
+                new_to_orig_in_inds = out_tree.query(new_out_graph)
+                orig_to_new_in_inds = new_kd_tree.query(original_out_graph)
                 orig_size = original_out_graph.shape[0]
                 new_size = new_out_graph.shape[0]
 

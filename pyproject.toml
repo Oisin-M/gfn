@@ -42,7 +42,11 @@ dev = [
 ]
 tests = [
     "pytest",
-    "pytest-cov"
+]
+ci = [
+    { include-group = "tests" },
+    "pytest-cov",
+    "faiss-cpu"
 ]
 
 [project.urls]
