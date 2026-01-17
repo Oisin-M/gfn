@@ -35,6 +35,16 @@ dependencies = [
     "scipy"
 ]
 
+[dependency-groups]
+dev = [
+    { include-group = "tests" },
+    "pre-commit",
+]
+tests = [
+    "pytest",
+    "pytest-cov"
+]
+
 [project.urls]
     repository = "https://github.com/Oisin-M/gfn"
     documentation = "https://github.com/Oisin-M/gfn"

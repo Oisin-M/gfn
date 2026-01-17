@@ -1,0 +1,32 @@
+name: qa
+
+on:
+  push:
+    branches: [ "main", "gfn" ]
+  pull_request:
+    branches: [ "main", "gfn" ]
+  workflow_dispatch: ~
+
+jobs:
+  qa:
+    name: qa
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: 3.13
+
+      - name: Install Python
+        run: uv python install
+
+      - name: Install package
+        run: |
+          uv sync --only-group dev
+          uv pip install .
+
+      - name: Run pre-commit
+        run: uv run pre-commit run --all-files
