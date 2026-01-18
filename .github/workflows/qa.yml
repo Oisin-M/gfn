@@ -2,9 +2,9 @@ name: qa
 
 on:
   push:
-    branches: [ "main", "gfn" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "gfn" ]
+    branches: [ "main" ]
   workflow_dispatch: ~
 
 jobs:
