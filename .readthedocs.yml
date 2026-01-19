@@ -8,5 +8,10 @@ build:
     post_create_environment:
       - python -m pip install --upgrade --no-cache-dir sphinxcontrib-bibtex
 
+python:
+  install:
+    - method: pip
+      path: .
+
 sphinx:
   configuration: docs/source/conf.py
