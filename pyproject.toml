@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=65", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gfn-layer"
+requires-python = ">=3.10"
+authors = [
+    { name = "Oisín M. Morrison", email = "oisinmmm@gmail.com" }
+    ]
+maintainers = [
+    {name = "Oisín M. Morrison", email = "oisinmmm@gmail.com"},
+    ]
+description = "Graph feedforward networks: an extension of linear layers to graphs."
+license = { text = "Apache License Version 2.0" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+    ]
+dynamic = ["version", "readme"]
+
+dependencies = [
+    "torch",
+    "numpy",
+    "scipy"
+]
+
+[dependency-groups]
+dev = [
+    { include-group = "tests" },
+    "pre-commit",
+]
+tests = [
+    "pytest",
+]
+ci = [
+    { include-group = "tests" },
+    "pytest-cov",
+    "faiss-cpu"
+]
+docs = [
+        "sphinx",
+        "sphinxcontrib-bibtex",
+    ]
+
+[project.urls]
+    repository = "https://github.com/Oisin-M/gfn"
+    documentation = "https://github.com/Oisin-M/gfn"
+    issues = "https://github.com/Oisin-M/gfn/issues"
+
+# Packaging/setuptools options
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+include = [ "gfn" ]
+where = [ "src/" ]
+
+[tool.setuptools_scm]
+version_file = "src/gfn/_version.py"
+version_file_template = '''
+# Do not change! Do not track in version control!
+__version__ = "{version}"
+'''
+parentdir_prefix_version='gfn-'  # get version from GitHub-like tarballs
+local_scheme = "no-local-version"
