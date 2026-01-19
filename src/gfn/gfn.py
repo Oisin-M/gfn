@@ -4,6 +4,54 @@ from gfn.nn_lookup import NNLookupSciPy, NNLookupFaiss
 
 
 class GFN(torch.nn.Linear):
+    r"""The graph feedforward network (GFN) layer from `"GFN: A graph feedforward network for resolution-invariant reduced operator learning in multifidelity applications" <https://doi.org/10.1016/j.cma.2024.117458>`_.
+
+        The layer is an extension of the standard :class:`torch.nn.Linear`, but with weights
+        and biases are optionally associated to original input :math:`\mathcal{M}^i_o` and output :math:`\mathcal{M}^o_o` graphs.
+        GFN then defines new weights and biases for new input :math:`\mathcal{M}^i_n` and output :math:`\mathcal{M}^o_n` graphs,
+        allowing for resolution-invariant learning.
+
+        The general GFN equation is given by:
+
+        .. math::
+            :nowrap:
+
+            \begin{equation*}
+            \begin{aligned}
+            \tilde{W}_{i_{{\mathcal{M}^o_{n}}}j_{{\mathcal{M}^i_{n}}}} &= \underset{\forall l_{\mathcal{M}^o_{o}} \text{ s.t } l_{\mathcal{M}^o_{o}} {\leftarrow}\!{\backslash}\!{\rightarrow} i_{\mathcal{M}^o_{n}}}{\operatorname{mean}}
+            \sum_{\forall k_{\mathcal{M}^i_{o}} \text{ s.t } k_{\mathcal{M}^i_{o}} {\leftarrow}\!{\backslash}\!{\rightarrow} j_{\mathcal{M}^i_{n}}} \frac{W_{l_{\mathcal{M}^o_{o}}k_{\mathcal{M}^i_{o}}}}{\lvert \{ h_{\mathcal{M}^i_{n}} \text{ s.t. } k_{\mathcal{M}^i_{o}} ~{\leftarrow}\!{\backslash}\!{\rightarrow}~ h_{\mathcal{M}^i_{n}} \}\rvert}, \\
+
+            \tilde{b}^d_{i_{\mathcal{M}^o_{n}}} &=  \underset{\forall k_{\mathcal{M}^o_{o}} \text{ s.t } k_{\mathcal{M}^o_{o}} {\leftarrow}\!{\backslash}\!{\rightarrow} i_{\mathcal{M}^o_{n}}}{\operatorname{mean}} {b}^d_{k_{\mathcal{M}^o_{o}}}.
+            \end{aligned}
+            \end{equation*}
+
+        where:
+
+        - :math:`\mathcal{M}^i_{o}` is the original input graph,
+        - :math:`\mathcal{M}^o_{o}` is the original output graph,
+        - :math:`\mathcal{M}^i_{n}` is the new input graph,
+        - :math:`\mathcal{M}^o_{n}` is the new output graph,
+        - :math:`W` and :math:`b` are the weights and biases associated to the original graphs,
+        - :math:`\tilde{W}` and :math:`\tilde{b}` are the new weights and biases associated to the new graphs,
+        - :math:`i_{\mathcal{M}_1} {\leftarrow}\!{\backslash}\!{\rightarrow} j_{\mathcal{M}_2}` indicates that either node :math:`i` in graph :math:`\mathcal{M}_1` is the nearest neighbor of node :math:`j` in graph :math:`\mathcal{M}_2` or vice versa.
+
+        GFN also supports mapping from graphs to vectors or vectors to graphs, in which case the above equation can be applied
+        with :math:`\mathcal{M}^i_{o}=\mathcal{M}^i_{n}` for a vector input or :math:`\mathcal{M}^o_{o}=\mathcal{M}^o_{n}` for a vector output.
+
+        Args:
+            in_features (int or torch.Tensor): Either a tensor of shape :math:`(N, D)` containing the coordinates of each original input node (graph input) or the size :math:`N` of each input (vector input).
+            out_features (int or torch.Tensor): Either a tensor of shape :math:`(N, D)` containing the coordinates of each original output node (graph output) or the size :math:`N` of each output (vector output).
+            bias (bool, optional): If set to :obj:`False`, the layer will not learn
+                an additive bias. (default: :obj:`True`)
+            device (torch.device, optional): The device on which the layer should be
+                allocated. (default: :obj:`None`)
+            dtype (torch.dtype, optional): The data type for the layer's parameters.
+                (default: :obj:`None`)
+            nn_backend (str, optional): The backend to use for nearest neighbor
+                lookup. Can be either :obj:`"scipy"` or :obj:`"faiss"`.
+                (default: :obj:`"scipy"`)
+    """
+
     def __init__(
         self,
         in_features,
@@ -49,6 +97,17 @@ class GFN(torch.nn.Linear):
             self.out_graph = None
 
     def forward(self, x, in_graph=None, out_graph=None):
+        r"""
+        Runs the forward pass of the module.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+            in_graph (torch.Tensor, optional): The input graph matching the shape of the input tensor. If :obj:`None`, treats as vector input i.e. assumes no change from the original input graph. (default: :obj:`None`)
+            out_graph (torch.Tensor, optional): The output graph. If :obj:`None`, treats as vector output i.e. assumes no change to the original output graph. (default: :obj:`None`)
+
+        Returns:
+            torch.Tensor: The output tensor. Matches the shape of the new output graph if provided.
+        """
         if in_graph is None and out_graph is None:
             return super().forward(x)
         elif in_graph is not None and self.in_tree is None:

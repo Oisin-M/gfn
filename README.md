@@ -34,7 +34,7 @@ GFN is a generalisation of feedforward networks for graphical data.
 Many applications rely upon graphical data, which standard machine learning methods such as feedforward networks and convolutions cannot handle. GFNs present a novel approach of tackling this problem by extending existing machine learning approaches for use on graphical data. GFNs have very close links with neural operators and graph neural networks.
 
 <p align="center">
-    <img src="https://github.com/Oisin-M/GFN/raw/refs/heads/main/readme_images/gfn.png"/>
+    <img src="https://github.com/Oisin-M/GFN-ROM/raw/refs/heads/gfn/docs/images/gfn.png"/>
 </p>
 
 Key advantages of GFNs:
@@ -47,9 +47,9 @@ Key advantages of GFNs:
 
 `gfn` is readily available on PyPI.
 ```
-pip install graphfn
+pip install gfn-layer
 ```
-**Note:** the package name on PyPI is graphfn, gfn refers to a different package.
+**Note:** the package name on PyPI is **gfn-layer**, gfn refers to a different package.
 
 For a developer installation
 ```
@@ -61,7 +61,7 @@ pre-commit install
 
 ## Quickstart
 
-Using `gfn` is intuitive - the `GFN` layer is an extension of the `torch.nn.Linear` layer. Simply import it `from gfn import GFN` and use as follows:
+Using `gfn` is intuitive - the `GFN` layer is an extension of the `torch.nn.Linear` layer. Simply import it with `from gfn import GFN` and use as follows:
 
 **No graph (equivalent to `torch.nn.Linear`)**
 ```python
