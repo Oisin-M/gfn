@@ -18,6 +18,8 @@
 <p align="center">
   <a href="#why-gfns">Why GFNs?</a>
   •
+  <a href="https://gfn-layer.readthedocs.io">Documentation</a>
+  •
   <a href="#installation">Installation</a>
   •
   <a href="#quickstart">Quickstart</a>
