@@ -6,8 +6,7 @@ build:
     python: "3.12"
   jobs:
     post_create_environment:
-      - pip install uv
-      - uv sync --only-group docs
+      - python -m pip install --upgrade --no-cache-dir sphinxcontrib-bibtex 4s
 
 sphinx:
   configuration: docs/source/conf.py
