@@ -5,7 +5,7 @@ User Guide
 ..    :titlesonly:
 ..    :maxdepth: 4
 
-**gfn** defines one key class: ``gfn.GFNLayer``, which implements a Graph Feedforward Network layer.
+**gfn** defines one key class: ``gfn.GFN``, which implements a Graph Feedforward Network layer.
 Using **gfn** is intuitive - the ``GFN`` layer is an extension of the ``torch.nn.Linear`` layer.
 Simply import it with ``from gfn import GFN`` and use it as outlined below.
 
