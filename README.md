@@ -34,7 +34,7 @@ GFN is a generalisation of feedforward networks for graphical data.
 Many applications rely upon graphical data, which standard machine learning methods such as feedforward networks and convolutions cannot handle. GFNs present a novel approach of tackling this problem by extending existing machine learning approaches for use on graphical data. GFNs have very close links with neural operators and graph neural networks.
 
 <p align="center">
-    <img src="https://github.com/Oisin-M/GFN-ROM/raw/refs/heads/gfn/docs/images/gfn.png"/>
+    <img src="https://github.com/Oisin-M/gfn/raw/refs/heads/main/docs/images/gfn.png"/>
 </p>
 
 Key advantages of GFNs:
