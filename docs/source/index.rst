@@ -38,3 +38,4 @@ Documentation
    api
    references
    Paper <https://doi.org/10.1016/j.cma.2024.117458>
+   citing
