@@ -39,8 +39,8 @@ class GFN(torch.nn.Linear):
         with :math:`\mathcal{M}^i_{o}=\mathcal{M}^i_{n}` for a vector input or :math:`\mathcal{M}^o_{o}=\mathcal{M}^o_{n}` for a vector output.
 
         Args:
-            in_features (int or torch.Tensor): Either a tensor of shape :math:`(N, D)` containing the coordinates of each original input node (graph input) or the size :math:`N` of each input (vector input).
-            out_features (int or torch.Tensor): Either a tensor of shape :math:`(N, D)` containing the coordinates of each original output node (graph output) or the size :math:`N` of each output (vector output).
+            in_features (int or torch.Tensor): Either a tensor of shape :math:`(N_{\text{in}}, D_{\text{in}})` containing the coordinates of each original input node (graph input) or the size :math:`N_{\text{in}}` of each input (vector input).
+            out_features (int or torch.Tensor): Either a tensor of shape :math:`(N_{\text{out}}, D_{\text{out}})` containing the coordinates of each original output node (graph output) or the size :math:`N_{\text{out}}` of each output (vector output).
             bias (bool, optional): If set to :obj:`False`, the layer will not learn
                 an additive bias. (default: :obj:`True`)
             device (torch.device, optional): The device on which the layer should be
@@ -101,9 +101,9 @@ class GFN(torch.nn.Linear):
         Runs the forward pass of the module.
 
         Args:
-            x (torch.Tensor): The input tensor.
-            in_graph (torch.Tensor, optional): The input graph matching the shape of the input tensor. If :obj:`None`, treats as vector input i.e. assumes no change from the original input graph. (default: :obj:`None`)
-            out_graph (torch.Tensor, optional): The output graph. If :obj:`None`, treats as vector output i.e. assumes no change to the original output graph. (default: :obj:`None`)
+            x (torch.Tensor): The input tensor of shape :math:`(..., N_{\text{in}}^{\prime})`.
+            in_graph (torch.Tensor, optional): The input graph matching the shape of the input tensor :math:`(N_{\text{in}}^{\prime}, D_{\text{in}})`. If :obj:`None`, treats as vector input i.e. assumes no change from the original input graph. (default: :obj:`None`)
+            out_graph (torch.Tensor, optional): The output graph of shape :math:`(N_{\text{out}}^{\prime}, D_{\text{out}})`. If :obj:`None`, treats as vector output i.e. assumes no change to the original output graph. (default: :obj:`None`)
 
         Returns:
             torch.Tensor: The output tensor. Matches the shape of the new output graph if provided.
