@@ -55,7 +55,7 @@ docs = [
 
 [project.urls]
     repository = "https://github.com/Oisin-M/gfn"
-    documentation = "https://github.com/Oisin-M/gfn"
+    documentation = "https://gfn-layer.readthedocs.io"
     issues = "https://github.com/Oisin-M/gfn/issues"
 
 # Packaging/setuptools options
