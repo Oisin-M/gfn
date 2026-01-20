@@ -11,7 +11,7 @@ authors = [
 maintainers = [
     {name = "Oisín M. Morrison", email = "oisinmmm@gmail.com"},
     ]
-description = "Graph feedforward networks: an extension of linear layers to graphs."
+description = "Graph Feedforward Networks: an extension of linear layers to graphs"
 license = { text = "Apache License Version 2.0" }
 classifiers = [
     "Development Status :: 4 - Beta",
